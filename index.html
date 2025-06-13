@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrySense</title>
+    <link rel="shortcut icon" href="img/Fav.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="background-blur"></div>
+
+    <div class="container">
+        <header>
+            <div class="left-header">
+                <h1>DrySense</h1>
+                <p>Dashboards</p>
+            </div>
+
+            <div class="right-header">
+                <div class="info-line">
+                    Previsão do Tempo: <span id="weatherForecast">Carregando...</span>
+                </div>
+                <div class="info-line">
+                    Tempo Atual: <span id="currentWeather">Carregando...</span>
+                </div>
+                <small id="currentHumidity">Umidade: Carregando...</small>
+            </div>
+        </header>
+
+        <main>
+            <div class="content-area">
+                <div class="card full-width">
+                    <div class="connection-status">
+                        <p>Status da Conexão: <span id="status">Desconectado</span></p>
+                        <input type="text" id="brokerUrl"
+                            value="wss://0413f3776af14a70aea96187e5c4f6d7.s1.eu.hivemq.cloud:8884/mqtt"
+                            placeholder="URL do Broker MQTT (ex: wss://seu-broker:8884/mqtt)">
+
+                        <input type="text" id="username" placeholder="Usuário (se necessário)">
+                        <input type="password" id="password" placeholder="Senha (se necessário)">
+                        <button id="connectBtn">Conectar</button>
+                        <button id="disconnectBtn" disabled>Desconectar</button>
+                    </div>
+
+                    <div class="connection-status">
+                        <p>REPOSTE</p>
+
+                        <input type="text" id="publishTopic" value="drysense/commands"
+                            placeholder="Tópico para Comandos">
+
+                        <input type="text" id="subscribeTopic" value="drysense/notifications"
+                            placeholder="Tópico para Notificações">
+                        <button id="subscribeBtn">Assinar Notificações</button>
+                    </div>
+                </div>
+
+                <div class="cardthwo">
+                    <div class="card small green">
+                        <div class="varal-status">
+                            <span class="icon">&#x1F6B1;</span>
+                            <h2 id="varalStatus">Desativado</h2>
+                        </div>
+                        <p>Sistema de proteção.</p>
+                    </div>
+
+                    <div class="card controls-card">
+                        <button id="recolherVaralBtn">Recolher Varal</button>
+                        <button id="estenderVaralBtn">Estender Varal</button>
+                    </div>
+                </div>
+
+
+                <div class="card smallme blue">
+                    <div class="pie-chart-container">
+                        <h3>Última Atividade</h3>
+                        <div class="pie-chart">
+                            <p>Varal Estendido: <span id="percentEstendido">0%</span></p>
+                            <p>Varal Recolhido: <span id="percentRecolhido">0%</span></p>
+                            <p>Atividade de Chuva: <span id="percentChuva">0%</span></p>
+                            <p>Atividade de Umidade: <span id="percentUmidade">0%</span></p>
+                        </div>
+                        <div class="chart-legend">
+                            <h4>Histórico Recente de Atividade:</h4>
+                            <div id="activityHistory">
+                                <p><span class="color-box" style="background-color: #2196F3;"></span>Sensor de chuva
+                                    ativado.</p>
+                                <p><span class="color-box" style="background-color: #424242;"></span>Motor ligado, varal
+                                    em recolhimento.</p>
+                                <p><span class="color-box" style="background-color: #8BC34A;"></span>Varal totalmente
+                                    recolhido.</p>
+                                <p><span class="color-box" style="background-color: #FFFFFF;"></span>Dados enviados para
+                                    o broker.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card large dark-gray">
+                    <h2>Notificação</h2>
+                    <div id="notificationMessages">
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="js/script.js"></script>
+<script src="js/script2.js"></script>
+
+</html>
