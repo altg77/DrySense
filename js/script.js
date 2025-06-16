@@ -254,23 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (msg.toLowerCase() === 'recolhido') {
                         updateVaralDisplay('Recolhido');
-                        addActivityToHistory('Varal totalmente recolhido.', 'red'); // Green color for recolhido
+                        addActivityToHistory('Varal totalmente recolhido.', 'red'); 
                         recolhidoCount++;
                     }
 
                     else if (msg.toLowerCase() === 'estendido') {
                         updateVaralDisplay('Estendido');
-                        addActivityToHistory('Varal totalmente estendido.', '#FA502F'); // Blue color for estendido
+                        addActivityToHistory('Varal totalmente estendido.', '#FA502F');
                         estendidoCount++;
                     }
 
                     else if (msg.toLowerCase().includes('chuva ativado')) {
-                        addActivityToHistory('Sensor de chuva ativado.', '#2196F3'); // Blue color for chuva
+                        addActivityToHistory('Sensor de chuva ativado.', '#2196F3'); 
                         chuvaCount++;
                     }
 
                     else if (msg.toLowerCase().includes('umidade:')) {
-                        addActivityToHistory(`Nível de umidade: ${msg.split(':')[1].trim()}`, '#ADD8E6'); // Light blue for humidity
+                        addActivityToHistory(`Nível de umidade: ${msg.split(':')[1].trim()}`, '#ADD8E6'); 
                         umidadeCount++;
                     }
 
