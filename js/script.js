@@ -79,14 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const newNotification = document.createElement('p');
         newNotification.innerHTML = `<strong>${timestamp}:</strong> ${message}`;
+        
         // Add new notifications at the top to show the latest first
         if (notificationMessages.firstChild) {
             notificationMessages.insertBefore(newNotification, notificationMessages.firstChild);
         } else {
             notificationMessages.appendChild(newNotification);
         }
-        // REMOVED: No longer limiting the number of notifications to keep full history
-        // The previous 'while' loop was removed to ensure all messages are kept.
+
+        // Limit the number of notifications to 14
+        while (notificationMessages.children.length > 14) {
+            notificationMessages.removeChild(notificationMessages.lastChild);
+        }
     }
 
     // Function to update the varal status, icon, and specific card background color in the UI
