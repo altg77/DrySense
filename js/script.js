@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // References to publish/subscribe topic inputs
     const publishTopicInput = document.getElementById('publishTopic');
     const subscribeTopicInput = document.getElementById('subscribeTopic');
-    const subscribeBtn = document.getElementById('subscribeBtn');
+    const subscribeBtn = document.getElementById('subscribeBtn'); // Keep this for manual subscription if desired, or remove if strictly auto
 
     // References to control buttons
     const recolherVaralBtn = document.getElementById('recolherVaralBtn');
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reference to the notification area
     const notificationMessages = document.getElementById('notificationMessages');
-
+    
     // Updated: Reference to the varal status display with new ID
     const varalStatusH2 = document.getElementById('varalStatus');
     const varalStatusIcon = document.querySelector('.varal-status .icon');
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             disconnectBtn.disabled = false;
             recolherVaralBtn.disabled = false;
             estenderVaralBtn.disabled = false;
-            subscribeBtn.disabled = false;
+            subscribeBtn.disabled = true; // Disable manual subscribe button as it's now automatic
         } else {
             statusSpan.textContent = 'Desconectado';
             statusSpan.classList.remove('connected', 'error');
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             disconnectBtn.disabled = true;
             recolherVaralBtn.disabled = true;
             estenderVaralBtn.disabled = true;
-            subscribeBtn.disabled = true;
+            subscribeBtn.disabled = false; // Enable manual subscribe button when disconnected
             updateVaralDisplay('Desativado');
             // Reset statistics when disconnected
             resetStatistics(); 
@@ -204,6 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 // On successful connection, default to "Desativado" until a status is received
                 updateVaralDisplay('Desativado');
                 resetStatistics(); // Reset statistics on new connection
+
+                // AUTOMATIC SUBSCRIPTION HERE
+                const notificationTopic = subscribeTopicInput.value;
+                if (notificationTopic) {
+                    client.subscribe(notificationTopic, (err) => {
+                        if (err) {
+                            console.error('Erro ao assinar tópico de notificações automaticamente:', err);
+                            addNotification(`Erro ao assinar tópico de notificações '${notificationTopic}': ${err.message}`);
+                        } else {
+                            console.log(`Assinado automaticamente com sucesso o tópico de notificações: ${notificationTopic}`);
+                            addNotification(`Assinado automaticamente o tópico de notificações: '${notificationTopic}'`);
+                        }
+                    });
+                }
             });
 
             client.on('error', (err) => {
@@ -315,27 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    subscribeBtn.addEventListener('click', () => {
-        const topic = subscribeTopicInput.value;
-
-        if (client && client.connected && topic) {
-            client.subscribe(topic, (err) => {
-                if (err) {
-                    console.error('Erro ao assinar tópico:', err);
-                    addNotification(`Erro ao assinar tópico '${topic}': ${err.message}`);
-                } else {
-                    console.log(`Assinado com sucesso o tópico: ${topic}`);
-                    addNotification(`Assinado com sucesso o tópico de notificações: '${topic}'`);
-                }
-            });
-        } else {
-            alert('Por favor, conecte-se ao broker e preencha o tópico para assinar.');
-        }
-    });
-
-    // Initial state setup on page load
     updateConnectionStatus(false);
-    updateVaralDisplay('Desativado'); // Initialize varal status and card background to Desativado on page load
-    updateStatistics(); // Initialize statistics display to 0%
-    activityHistoryDiv.innerHTML = ''; // Clear any pre-existing HTML from the history div
+    updateVaralDisplay('Desativado'); 
+    updateStatistics(); 
+    activityHistoryDiv.innerHTML = ''; 
 });
