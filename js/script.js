@@ -6,26 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const disconnectBtn = document.getElementById('disconnectBtn');
     const statusSpan = document.getElementById('status');
 
-    // References to publish/subscribe topic inputs
     const publishTopicInput = document.getElementById('publishTopic');
     const subscribeTopicInput = document.getElementById('subscribeTopic');
-    const subscribeBtn = document.getElementById('subscribeBtn'); // Keep this for manual subscription if desired, or remove if strictly auto
+    const subscribeBtn = document.getElementById('subscribeBtn');
 
-    // References to control buttons
     const recolherVaralBtn = document.getElementById('recolherVaralBtn');
     const estenderVaralBtn = document.getElementById('estenderVaralBtn');
 
-    // Reference to the notification area
     const notificationMessages = document.getElementById('notificationMessages');
-    
-    // Updated: Reference to the varal status display with new ID
+
     const varalStatusH2 = document.getElementById('varalStatus');
     const varalStatusIcon = document.querySelector('.varal-status .icon');
 
-    // Reference to the 'card small green' element for background change
     const varalStatusCard = document.querySelector('.small.green');
 
-    // References for activity statistics
     const percentEstendidoSpan = document.getElementById('percentEstendido');
     const percentRecolhidoSpan = document.getElementById('percentRecolhido');
     const percentChuvaSpan = document.getElementById('percentChuva');
@@ -35,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let client = null;
     const client_id = 'DrySenseWebClient_' + Math.random().toString(16).substring(2, 8); // Unique client ID
 
-    // GLOBAL VARIABLES: Variables to store activity counts
     let totalMessages = 0;
     let estendidoCount = 0;
     let recolhidoCount = 0;
@@ -51,8 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
             disconnectBtn.disabled = false;
             recolherVaralBtn.disabled = false;
             estenderVaralBtn.disabled = false;
-            subscribeBtn.disabled = true; // Disable manual subscribe button as it's now automatic
-        } else {
+            subscribeBtn.disabled = true;
+        }
+
+        else {
             statusSpan.textContent = 'Desconectado';
             statusSpan.classList.remove('connected', 'error');
             statusSpan.classList.add('disconnected');
@@ -60,14 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
             disconnectBtn.disabled = true;
             recolherVaralBtn.disabled = true;
             estenderVaralBtn.disabled = true;
-            subscribeBtn.disabled = false; // Enable manual subscribe button when disconnected
+            subscribeBtn.disabled = false;
             updateVaralDisplay('Desativado');
-            // Reset statistics when disconnected
-            resetStatistics(); 
+
+            resetStatistics();
         }
     }
 
-    // Function to add a notification message (now with full history)
     function addNotification(message) {
         const timestamp = new Date().toLocaleString('pt-BR', {
             day: '2-digit',
@@ -79,15 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const newNotification = document.createElement('p');
         newNotification.innerHTML = `<strong>${timestamp}:</strong> ${message}`;
-        
-        // Add new notifications at the top to show the latest first
+
         if (notificationMessages.firstChild) {
             notificationMessages.insertBefore(newNotification, notificationMessages.firstChild);
-        } else {
+        }
+
+        else {
             notificationMessages.appendChild(newNotification);
         }
 
-        // Limit the number of notifications to 14
         while (notificationMessages.children.length > 14) {
             notificationMessages.removeChild(notificationMessages.lastChild);
         }
@@ -101,27 +95,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (varalStatusIcon) {
                 if (status === 'Recolhido') {
-                    varalStatusIcon.innerHTML = '&#x1F6B1;'; // Umbrella icon
-                    newCardBackgroundColor = 'red'; // Changed to red as per your request
-                } else if (status === 'Estendido') {
-                    varalStatusIcon.innerHTML = '&#x1F455;'; // T-shirt icon
-                    newCardBackgroundColor = 'blue'; // Changed to blue as per your request
-                } else { // 'Desativado' or any unrecognized status
-                    varalStatusIcon.innerHTML = '&#x26D4;'; // No entry sign icon
-                    newCardBackgroundColor = 'black'; // Changed to black as per your request
+                    varalStatusIcon.innerHTML = '&#x1F6B1;';
+                    newCardBackgroundColor = 'red';
+                }
+                
+                else if (status === 'Estendido') {
+                    varalStatusIcon.innerHTML = '&#x1F455;';
+                    newCardBackgroundColor = '#FA502F';
+                } 
+                
+                else if (status === 'Conectado') { 
+                    varalStatusIcon.innerHTML = '&#x1F50C;'; 
+                    newCardBackgroundColor = '#0047AB'; 
+                } 
+                
+                else { 
+                    varalStatusIcon.innerHTML = '&#x26D4;';
+                    newCardBackgroundColor = 'black';
                 }
 
-                // Apply the background color to the specific status card
                 if (varalStatusCard) {
                     varalStatusCard.style.backgroundColor = newCardBackgroundColor;
-                    varalStatusIcon.style.color = (status === 'Desativado') ? 'white' : '#555';
+                    varalStatusIcon.style.color = (newCardBackgroundColor === 'black' || newCardBackgroundColor === 'red') ? 'white' : '#555';
                 }
             }
         }
     }
 
-    // NEW/REINSTATED: Function to add activity to history and update statistics
-    function addActivityToHistory(message, color = '#2196F3') { // Default color if not specified
+    // Function to add activity to history and update statistics
+    function addActivityToHistory(message, color = '#2196F3') {
         const timestamp = new Date().toLocaleString('pt-BR', {
             day: '2-digit',
             month: '2-digit',
@@ -133,20 +135,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const newActivity = document.createElement('p');
         newActivity.innerHTML = `<span class="color-box" style="background-color: ${color};"></span> <strong>${timestamp}:</strong> ${message}`;
 
-        // Add new activities at the top of the history
         if (activityHistoryDiv.firstChild) {
             activityHistoryDiv.insertBefore(newActivity, activityHistoryDiv.firstChild);
-        } else {
+        }
+
+        else {
             activityHistoryDiv.appendChild(newActivity);
         }
 
-        // Limit the number of activities in history for readability (e.g., last 7)
         while (activityHistoryDiv.children.length > 7) {
             activityHistoryDiv.removeChild(activityHistoryDiv.lastChild);
         }
     }
 
-    // Function to calculate and update percentages
     function updateStatistics() {
         if (totalMessages === 0) {
             percentEstendidoSpan.textContent = '0%';
@@ -174,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         recolhidoCount = 0;
         chuvaCount = 0;
         umidadeCount = 0;
-        updateStatistics(); // Update display to show 0%
-        activityHistoryDiv.innerHTML = ''; // Clear activity history
+        updateStatistics();
+        activityHistoryDiv.innerHTML = '';
     }
 
 
@@ -185,10 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = passwordInput.value;
 
         const options = {
-            clean: true, // Clean session
+            clean: true,
             connectTimeout: 4000,
             reconnectPeriod: 1000,
-            clientId: client_id, // Use the generated client ID
+            clientId: client_id,
         };
 
         if (username) {
@@ -204,19 +205,22 @@ document.addEventListener('DOMContentLoaded', () => {
             client.on('connect', () => {
                 console.log('Conectado ao broker MQTT!');
                 updateConnectionStatus(true);
-                addNotification('Conectado ao broker MQTT.'); // Notify connection success
-                // On successful connection, default to "Desativado" until a status is received
-                updateVaralDisplay('Desativado');
-                resetStatistics(); // Reset statistics on new connection
+                addNotification('Conectado ao broker MQTT.');
+
+                updateVaralDisplay('Conectado');
+                resetStatistics();
 
                 // AUTOMATIC SUBSCRIPTION HERE
                 const notificationTopic = subscribeTopicInput.value;
                 if (notificationTopic) {
                     client.subscribe(notificationTopic, (err) => {
+
                         if (err) {
                             console.error('Erro ao assinar tópico de notificações automaticamente:', err);
                             addNotification(`Erro ao assinar tópico de notificações '${notificationTopic}': ${err.message}`);
-                        } else {
+                        }
+
+                        else {
                             console.log(`Assinado automaticamente com sucesso o tópico de notificações: ${notificationTopic}`);
                             addNotification(`Assinado automaticamente o tópico de notificações: '${notificationTopic}'`);
                         }
@@ -229,49 +233,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusSpan.textContent = 'Erro de Conexão';
                 statusSpan.classList.add('error');
                 updateConnectionStatus(false);
-                addNotification(`Erro na conexão: ${err.message}`); // Notify connection error
-                client.end(); // Close connection on severe error
+                addNotification(`Erro na conexão: ${err.message}`);
+                client.end();
             });
 
             client.on('close', () => {
                 console.log('Conexão MQTT fechada.');
                 updateConnectionStatus(false);
-                addNotification('Conexão MQTT fechada.'); // Notify disconnection
+                addNotification('Conexão MQTT fechada.');
             });
 
             client.on('message', (topic, message) => {
                 const msg = message.toString();
                 console.log(`Mensagem recebida no tópico "${topic}": ${msg}`);
 
-                // Add all messages from the subscribed notification topic to the main notification area
                 if (topic === subscribeTopicInput.value) {
                     addNotification(`Recebido em '${topic}': ${msg}`);
 
-                    // Process messages for varal status and statistics
-                    totalMessages++; // Increment total messages for statistics
+                    totalMessages++; 
 
                     if (msg.toLowerCase() === 'recolhido') {
                         updateVaralDisplay('Recolhido');
-                        addActivityToHistory('Varal totalmente recolhido.', '#8BC34A'); // Green color for recolhido
+                        addActivityToHistory('Varal totalmente recolhido.', 'red'); // Green color for recolhido
                         recolhidoCount++;
-                    } else if (msg.toLowerCase() === 'estendido') {
+                    }
+
+                    else if (msg.toLowerCase() === 'estendido') {
                         updateVaralDisplay('Estendido');
-                        addActivityToHistory('Varal totalmente estendido.', '#2196F3'); // Blue color for estendido
+                        addActivityToHistory('Varal totalmente estendido.', '#FA502F'); // Blue color for estendido
                         estendidoCount++;
-                    } else if (msg.toLowerCase().includes('chuva ativado')) { // Example: "sensor de chuva ativado"
+                    }
+
+                    else if (msg.toLowerCase().includes('chuva ativado')) {
                         addActivityToHistory('Sensor de chuva ativado.', '#2196F3'); // Blue color for chuva
                         chuvaCount++;
-                    } else if (msg.toLowerCase().includes('umidade:')) { // Example: "umidade: 75%"
+                    }
+
+                    else if (msg.toLowerCase().includes('umidade:')) {
                         addActivityToHistory(`Nível de umidade: ${msg.split(':')[1].trim()}`, '#ADD8E6'); // Light blue for humidity
                         umidadeCount++;
-                    } else if (msg.toLowerCase().includes('motor ligado, varal em recolhimento')) {
-                        addActivityToHistory('Motor ligado, varal em recolhimento.', '#424242'); // Dark gray for motor activity
-                    } else if (msg.toLowerCase().includes('dados enviados para o broker')) {
-                        addActivityToHistory('Dados enviados para o broker.', '#FFFFFF'); // White for data sent
                     }
-                    // You can add more 'else if' conditions for other specific messages you want to track
 
-                    updateStatistics(); // Recalculate and update percentages after each relevant message
+                    else if (msg.toLowerCase().includes('motor ligado, varal em recolhimento')) {
+                        addActivityToHistory('Motor ligado, varal em recolhimento.', '#424242');
+                    }
+
+                    else if (msg.toLowerCase().includes('dados enviados para o broker')) {
+                        addActivityToHistory('Dados enviados para o broker.', '#FFFFFF');
+                    }
+
+                    updateStatistics();
                 }
             });
 
@@ -280,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statusSpan.textContent = 'URL do Broker Inválida';
             statusSpan.classList.add('error');
             updateConnectionStatus(false);
-            addNotification(`Falha ao tentar conectar: ${e.message}`); // Notify connection attempt error
+            addNotification(`Falha ao tentar conectar: ${e.message}`);
         }
     });
 
@@ -293,17 +304,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Event listener for "Recolher Varal" button
     recolherVaralBtn.addEventListener('click', () => {
         const topic = publishTopicInput.value;
-        const message = 'recolher'; // Command to send
+        const message = 'recolher';
 
         if (client && client.connected && topic) {
             client.publish(topic, message, (err) => {
                 if (err) {
                     console.error('Erro ao publicar mensagem "recolher":', err);
                     addNotification(`Erro ao enviar comando 'recolher': ${err.message}`);
-                } else {
+                }
+
+                else {
                     console.log(`Comando "recolher" enviado para o tópico "${topic}"`);
                     addNotification(`Comando 'recolher' enviado.`);
                 }
@@ -316,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for "Estender Varal" button
     estenderVaralBtn.addEventListener('click', () => {
         const topic = publishTopicInput.value;
-        const message = 'estender'; // Command to send
+        const message = 'estender';
 
         if (client && client.connected && topic) {
             client.publish(topic, message, (err) => {
@@ -328,13 +340,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     addNotification(`Comando 'estender' enviado.`);
                 }
             });
-        } else {
+        }
+
+        else {
             alert('Por favor, conecte-se ao broker antes de enviar comandos.');
         }
     });
 
     updateConnectionStatus(false);
-    updateVaralDisplay('Desativado'); 
-    updateStatistics(); 
-    activityHistoryDiv.innerHTML = ''; 
+    updateVaralDisplay('Desconectado');
+    updateStatistics();
+    activityHistoryDiv.innerHTML = '';
 });
